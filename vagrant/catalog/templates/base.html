@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<link href='http://fonts.googleapis.com/css?family=Roboto:400,300,700' rel='stylesheet' type='text/css'>
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+		<link rel=stylesheet type=text/css href="/static/styles.css">
+	</head>
+	<body>
+		<div class="container-fluid header header">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12"><h3 class="pull-left"><a href="{{url_for('showHome')}}">Catalog App</a> <h3><a class="btn btn-primary pull-right" href="{{url_for('showLogin')}}">Login</a></div>
+				</div>
+			</div>
+		</div>
+		<div class="container-fluid home-background">
+			<div class="container">
+				{% block content %}
+				{% endblock %}
+			</div>
+		</div>
+		<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+	</body>
+</html>

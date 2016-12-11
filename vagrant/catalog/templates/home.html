@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="row card home-card">
+	<div class="col-md-3 section-divider">
+		<a class="display-links" href="{{url_for('newCategory')}}">Add new Category</a>
+		<h3>Categories</h3>
+		{% for category in categories %}
+			<div class="">
+				<a href="{{ url_for('showCategory',category_name = category.name)}}" class="display-links" href=""> {{category.name}}</a>
+			</div>
+		{% endfor %}
+	</div>
+	<div class="col-md-9 section-divider-left">
+		<a class="display-links" href="{{url_for('newItem')}}">Add new Item</a>
+		<h3>Latest Items</h3>
+		{% for item in items %}
+			<div class="">
+				<a class="display-links" href="{{url_for('showItem', category_name = item.category.name, item_name = item.name)}}"> {{item.name}} ({{item.category.name}})</a>
+			</div>
+		{% endfor %}
+	</div>
+</div>
+
+{% endblock %}

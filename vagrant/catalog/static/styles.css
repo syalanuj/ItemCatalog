@@ -1,0 +1,32 @@
+
+.header{
+	background-color: #03203F;
+	color: white;
+}
+
+.card {
+    /* Add shadows to create the "card" effect */
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+}
+
+.home-card {
+	margin-top: 30px;
+	background-color: white;
+}
+
+.home-background {
+	background-color: #DDDDDD;
+	min-height: 100vh;
+}
+.section-divider {
+	border-right: thick double black;
+}
+.section-divider-left {
+	border-left: thick double black;
+}
+
+.display-links {
+	color: red;
+}
+

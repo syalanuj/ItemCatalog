@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row card home-card">
+	<div class="col-md-12">
+		<h1>New  Item</h1>
+		<form action="" method = 'post'>
+			<p>Name:</p>
+			<input type ='text' size='30' name='name' placeholder="{{editedItem.name}}">
+			<p>Description:</p>
+			<input type ='text' size='30' name='description' placeholder="{{editedItem.description}}">
+			<p>Category</p>
+			<select name="category_id">
+				<option value="{{itemCategory.id}}">{{itemCategory.name}}</option>
+  				{% for category in categories %}
+      				<option value="{{ category.id }}">{{ category.name }}</option>
+  				{% endfor %}
+			</select>
+			</br>
+			</br>
+			<input type='submit' value='Create'>
+			</br>
+			</br>
+		</form>
+	</div>
+</div>
+
+{% endblock %}
