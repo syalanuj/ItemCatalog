@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
+from flask import Flask,render_template,
+                    request,redirect,jsonify,url_for,flash
 
 
 from sqlalchemy import create_engine, asc
@@ -18,7 +19,8 @@ import requests
 
 app = Flask(__name__)
 
-CLIENT_ID = json.loads(open('client_secret.json', 'r').read())['web']['client_id']
+CLIENT_ID = json.loads(open('client_secret.json', 
+                    'r').read())['web']['client_id']
 APPLICATION_NAME = "Item Catalog Application"
 
 
@@ -92,7 +94,8 @@ def gconnect():
     stored_credentials = login_session.get('credentials')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_credentials is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'),
+        response = make_response(json.dumps(
+                                'Current user is already connected.'),
                                  200)
         response.headers['Content-Type'] = 'application/json'
         return response
@@ -125,7 +128,10 @@ def gconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ''' style = "width: 300px; height: 
+                300px;border-radius: 150px;
+                -webkit-border-radius: 150px
+                ;-moz-border-radius: 150px;"> '''
     flash("you are now logged in as %s" % login_session['username'])
     print "done!"
     return output
@@ -198,7 +204,8 @@ def catalogJSON():
     #     for item in items:
     #         if category.id == item.category_id:
     #             category.items.append(item)
-    return jsonify(Categories=[i.serialize for i in categories], Items = [i.serialize for i in items])
+    return jsonify(Categories=[i.serialize for i in categories],
+                    Items=[i.serialize for i in items])
 
 
 # Show all categories and latest items
@@ -213,17 +220,23 @@ def showHome():
 
     return render_template('home.html', categories=categories, items=items)
 
+
 # Show particular category Items
 @app.route('/catalog/<category_name>/items')
 def showCategory(category_name):
     categories = session.query(Category).order_by(asc(Category.name))
-    selectedCategory = session.query(Category).filter_by(name=category_name).one()
-    categoryItems = session.query(Item).filter_by(category_id=selectedCategory.id)
+    selectedCategory = session.query(Category).
+                        filter_by(name=category_name).one()
+    categoryItems = session.query(Item).filter_by(
+                            category_id=selectedCategory.id)
     for item in categoryItems:
         for category in categories:
             if item.category_id == category.id:
                 item.category = category
-    return render_template('category.html', categories=categories, selectedCategory=selectedCategory, categoryItems=categoryItems)
+    return render_template('category.html',categories=categories,
+                            selectedCategory=selectedCategory,
+                            categoryItems=categoryItems)
+
 
 # Create a new Category
 @app.route('/category/new/', methods=['GET', 'POST'])
@@ -231,13 +244,15 @@ def newCategory():
     if 'username' not in login_session:
         return redirect('/login')
     if request.method == 'POST':
-        newCategory = Category(name=request.form['name'], user_id=login_session['user_id'])
+        newCategory = Category(name=request.form['name'],
+                                user_id=login_session['user_id'])
         session.add(newCategory)
         flash('New Category %s Successfully Created' % newCategory.name)
         session.commit()
         return redirect(url_for('showHome'))
     else:
         return render_template('newCategory.html')
+
 
 # # Edit a category
 @app.route('/category/<int:category_id>/edit/', methods=['GET', 'POST'])
@@ -279,14 +294,17 @@ def deleteCategory(category_id):
     else:
         return render_template('deleteCategory.html', category=categoryToDelete)
 
+
 # Show a item menu
 @app.route('/catalog/<category_name>/<item_name>/')
 def showItem(category_name, item_name):
     selectedCategory = session.query(
                         Category).filter_by(name=category_name).one()
     selectedItem = session.query(Item).filter_by(
-                        name=item_name, category_id= selectedCategory.id).one()
-    return render_template('itemDetails.html', item=selectedItem, category=selectedCategory)
+                        name=item_name, category_id=selectedCategory.id).one()
+    return render_template('itemDetails.html',
+                            item=selectedItem,
+                            category=selectedCategory)
 
 
 # Create a new menu item
@@ -297,14 +315,19 @@ def newItem():
     categories = session.query(Category).order_by(asc(Category.name)).all()
 
     if request.method == 'POST':
-        newItem = Item(name=request.form['name'], description=request.form['description'],
-                        category_id=request.form['category_id'], user_id=login_session['user_id'])
+        newItem = Item(name=request.form['name'],
+                        description=request.form['description'],
+                        category_id=request.form['category_id'],
+                        user_id=login_session['user_id'])
         selectedCategory = session.query(
-                        Category).filter_by(id=request.form['category_id']).one()
+                        Category).filter_by(
+                            id=request.form['category_id']).one()
         session.add(newItem)
         session.commit()
         flash('New %s Item Successfully Created' % (newItem.name))
-        return redirect(url_for('showItem', category_name=selectedCategory.name, item_name=newItem.name))
+        return redirect(url_for('showItem', 
+                        category_name=selectedCategory.name,
+                        item_name=newItem.name))
     else:
         return render_template('newItem.html', categories=categories)
 
@@ -317,12 +340,12 @@ def editItem(item_name):
 
     categories = session.query(Category).order_by(asc(Category.name)).all()
     editedItem = session.query(Item).filter_by(name=item_name).one()
-    itemCategory = session.query(Category).filter_by(id=editedItem.category_id).one()
+    itemCategory = session.query(Category).
+                    filter_by(id=editedItem.category_id).one()
 
     if login_session['user_id'] != editedItem.user_id:
         flash('You can only edit Item which you have created')
         return redirect(url_for('showHome'))
-    
     if request.method == 'POST':
         if request.form['name']:
             editedItem.name = request.form['name']
@@ -333,9 +356,12 @@ def editItem(item_name):
         session.add(editedItem)
         session.commit()
         flash('Item Successfully Edited')
-        return redirect(url_for('showItem', category_name=itemCategory.name, item_name=editedItem.name))
+        return redirect(url_for('showItem', 
+                category_name=itemCategory.name,
+                item_name=editedItem.name))
     else:
-        return render_template('edititem.html', editedItem=editedItem, itemCategory=itemCategory, categories = categories)
+        return render_template('edititem.html',editedItem=editedItem,
+                        itemCategory=itemCategory,categories=categories)
 
 
 # Delete a menu item
