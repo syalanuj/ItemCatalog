@@ -1,6 +1,4 @@
-from flask import Flask,render_template,
-                    request,redirect,jsonify,url_for,flash
-
+from flask import Flask,render_template,request,redirect,jsonify,url_for,flash
 
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
@@ -35,11 +33,16 @@ session = DBSession()
 # Create anti-forgery state token
 @app.route('/login')
 def showLogin():
+    isUserLoggedIn = False
+    if 'credentials' in login_session:
+        isUserLoggedIn = True
+
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
     login_session['state'] = state
+    print isUserLoggedIn
     # return "The current session state is %s" % login_session['state']
-    return render_template('login.html', STATE=state)
+    return render_template('login.html', STATE=state, isUserLoggedIn=isUserLoggedIn)
 
 
 @app.route('/gconnect', methods=['POST'])
@@ -140,22 +143,26 @@ def gconnect():
 
 
 def createUser(login_session):
-    newUser = User(name=login_session['username'], email=login_session[
+    user = session.query(User).filter_by(email=login_session['email']).first()
+    if user != None:
+        user.name = login_session['username']
+        user.email = login_session['email']
+    else:
+        user = User(name=login_session['username'], email=login_session[
                    'email'])
-    session.add(newUser)
+    session.add(user)
     session.commit()
-    user = session.query(User).filter_by(email=login_session['email']).one()
     return user.id
 
 
 def getUserInfo(user_id):
-    user = session.query(User).filter_by(id=user_id).one()
+    user = session.query(User).filter_by(id=user_id).first()
     return user
 
 
 def getUserFromEmail(email):
     try:
-        user = session.query(User).filter_by(email=email).one()
+        user = session.query(User).filter_by(email=email).first()
         return user.id
     except:
         return None
@@ -171,7 +178,8 @@ def gdisconnect():
             json.dumps('Current user not connected.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
-    access_token = credentials.access_token
+
+    access_token = credentials
     url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
@@ -225,8 +233,8 @@ def showHome():
 @app.route('/catalog/<category_name>/items')
 def showCategory(category_name):
     categories = session.query(Category).order_by(asc(Category.name))
-    selectedCategory = session.query(Category).
-                        filter_by(name=category_name).one()
+    selectedCategory = session.query(Category).filter_by(
+                                name=category_name).one()
     categoryItems = session.query(Item).filter_by(
                             category_id=selectedCategory.id)
     for item in categoryItems:
@@ -340,8 +348,8 @@ def editItem(item_name):
 
     categories = session.query(Category).order_by(asc(Category.name)).all()
     editedItem = session.query(Item).filter_by(name=item_name).one()
-    itemCategory = session.query(Category).
-                    filter_by(id=editedItem.category_id).one()
+    itemCategory = session.query(Category).filter_by(
+                        id=editedItem.category_id).one()
 
     if login_session['user_id'] != editedItem.user_id:
         flash('You can only edit Item which you have created')
