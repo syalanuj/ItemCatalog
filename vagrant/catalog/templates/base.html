@@ -9,7 +9,14 @@
 		<div class="container-fluid header header">
 			<div class="container">
 				<div class="row">
-					<div class="col-md-12"><h3 class="pull-left"><a href="{{url_for('showHome')}}">Catalog App</a> <h3><a class="btn btn-primary pull-right" href="{{url_for('showLogin')}}">Login/Logout</a></div>
+					<div class="col-md-12">
+						<h3 class="pull-left"><a href="{{url_for('showHome')}}">Catalog App</a> </h3>
+						{% if isUserLoggedIn == False %}
+						<h3><a class="btn btn-primary pull-right" href="{{url_for('showLogin')}}">Login</a></h3>
+						{% else %}
+						<h3><a class="btn btn-primary pull-right" href="{{url_for('gdisconnect')}}">Logout</a></h3>
+						{% endif %}
+					</div>
 				</div>
 			</div>
 		</div>

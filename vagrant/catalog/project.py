@@ -33,14 +33,10 @@ session = DBSession()
 # Create anti-forgery state token
 @app.route('/login')
 def showLogin():
-    isUserLoggedIn = False
-    if 'credentials' in login_session:
-        isUserLoggedIn = True
-
+    isUserLoggedIn = checkUserLoggedIn()
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
     login_session['state'] = state
-    print isUserLoggedIn
     # return "The current session state is %s" % login_session['state']
     return render_template('login.html', STATE=state, isUserLoggedIn=isUserLoggedIn)
 
@@ -167,6 +163,12 @@ def getUserFromEmail(email):
     except:
         return None
 
+def checkUserLoggedIn():
+    isUserLoggedIn = False
+    if 'credentials' in login_session:
+        isUserLoggedIn = True
+    return isUserLoggedIn
+
 
 # DISCONNECT - Revoke a current user's token and reset their login_session
 @app.route('/gdisconnect')
@@ -207,18 +209,14 @@ def gdisconnect():
 @app.route('/catalog.json')
 def catalogJSON():
     categories = session.query(Category).order_by(asc(Category.name)).all()
-    items = session.query(Item).order_by(asc(Item.name)).all()
-    # for category in categories:
-    #     for item in items:
-    #         if category.id == item.category_id:
-    #             category.items.append(item)
-    return jsonify(Categories=[i.serialize for i in categories],
-                    Items=[i.serialize for i in items])
+    item = session.query(Item).order_by(asc(Item.name)).first()
+    return jsonify(item.serialize)
 
 
 # Show all categories and latest items
 @app.route('/')
 def showHome():
+    isUserLoggedIn = checkUserLoggedIn()
     categories = session.query(Category).order_by(asc(Category.name)).all()
     items = session.query(Item).order_by(asc(Item.name)).all()
     for item in items:
@@ -226,12 +224,16 @@ def showHome():
             if item.category_id == category.id:
                 item.category = category
 
-    return render_template('home.html', categories=categories, items=items)
+    return render_template('home.html', categories=categories, items=items,
+            isUserLoggedIn=isUserLoggedIn)
 
 
 # Show particular category Items
 @app.route('/catalog/<category_name>/items')
 def showCategory(category_name):
+    isUserLoggedIn = checkUserLoggedIn()
+    if 'credentials' in login_session:
+        isUserLoggedIn = True
     categories = session.query(Category).order_by(asc(Category.name))
     selectedCategory = session.query(Category).filter_by(
                                 name=category_name).one()
@@ -243,12 +245,14 @@ def showCategory(category_name):
                 item.category = category
     return render_template('category.html',categories=categories,
                             selectedCategory=selectedCategory,
-                            categoryItems=categoryItems)
+                            categoryItems=categoryItems,
+                            isUserLoggedIn=isUserLoggedIn)
 
 
 # Create a new Category
 @app.route('/category/new/', methods=['GET', 'POST'])
 def newCategory():
+    isUserLoggedIn = checkUserLoggedIn()
     if 'username' not in login_session:
         return redirect('/login')
     if request.method == 'POST':
@@ -259,7 +263,7 @@ def newCategory():
         session.commit()
         return redirect(url_for('showHome'))
     else:
-        return render_template('newCategory.html')
+        return render_template('newCategory.html',isUserLoggedIn=isUserLoggedIn)
 
 
 # # Edit a category
@@ -368,7 +372,7 @@ def editItem(item_name):
                 category_name=itemCategory.name,
                 item_name=editedItem.name))
     else:
-        return render_template('edititem.html',editedItem=editedItem,
+        return render_template('editItem.html',editedItem=editedItem,
                         itemCategory=itemCategory,categories=categories)
 
 
@@ -395,5 +399,5 @@ def deleteItem(item_name):
 
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
-    app.debug = True
+    app.debug = False
     app.run(host='0.0.0.0', port=5000)
