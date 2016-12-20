@@ -208,9 +208,24 @@ def gdisconnect():
 # JSON APIs to view Item Information
 @app.route('/catalog.json')
 def catalogJSON():
-    categories = session.query(Category).order_by(asc(Category.name)).all()
-    item = session.query(Item).order_by(asc(Item.name)).first()
-    return jsonify(item.serialize)
+    items = session.query(Item).order_by(asc(Item.name)).all()
+    return jsonify(Items=[item.serialize for item in items])
+
+@app.route('/item/<int:restaurant_id>/<int:category_id>/JSON')
+def itemJSON(restaurant_id,category_id):
+    categoryItem = session.query(Item).filter_by(
+                            id=restaurant_id,
+                            category_id=category_id
+                            ).first()
+    return jsonify(categoryItem.serialize)
+
+@app.route('/category/<int:category_id>/JSON')
+def categoryJSON(category_id):
+    selectedCategory = session.query(Category).filter_by(
+                            id=category_id
+                            ).first()
+    print(selectedCategory)
+    return jsonify(selectedCategory.serialize)
 
 
 # Show all categories and latest items
@@ -399,5 +414,5 @@ def deleteItem(item_name):
 
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
-    app.debug = False
+    app.debug = True
     app.run(host='0.0.0.0', port=5000)
